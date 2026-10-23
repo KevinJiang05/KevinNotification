@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>KevinNotificationBridge</AssemblyName>
+    <RootNamespace>KevinNotificationBridge</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\CodexFeishuBridge\AwayGuardInput.cs" Link="AwayGuardInput.cs" />
+    <InternalsVisibleTo Include="KevinNotificationBridge.Tests" />
+  </ItemGroup>
+</Project>

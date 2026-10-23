@@ -1,0 +1,16 @@
+{
+  "Enabled": true,
+  "Hotkey": "Alt+W",
+  "CompletionNotifications": true,
+  "FailureNotifications": true,
+  "AwayGuardLinkedToNotifications": false,
+  "AwayGuardEnabled": false,
+  "WatchIntervalSeconds": 10,
+  "GuardAlertIntervalSeconds": 2,
+  "CaptureCameraOnGuardAlert": false,
+  "CaptureRetentionCount": 30,
+  "LockWorkstationAfterRepeatedGuardAlerts": false,
+  "LockScreenCooldownSeconds": 120,
+  "AppPassword": "",
+  "SecurityWarningText": "检测到异常操作\r\n为保护设备与隐私，已触发远程提醒。\r\n请立即停止操作。"
+}

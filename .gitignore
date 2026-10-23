@@ -1,0 +1,18 @@
+# Local runtime data (never publish these files)
+CodexFeishuBridge/notification-settings.json
+**/runtime-status.json
+**/settings.json
+**/notifications.log
+**/captures/
+*.log
+.env
+.env.*
+*.user
+*.suo
+
+# Build, publish and local verification output
+**/bin/
+**/obj/
+artifacts/
+.tmp/
+.vs/
