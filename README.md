@@ -1,28 +1,22 @@
 # KevinNotification
 
-**面向 Codex 用户的 Windows 飞书通知工具。** 长任务结束后，把完成摘要或异常提醒发到飞书；通过系统托盘和全局快捷键控制通知，并提供可选的离开防护。
+**把本机 Codex 任务的完成摘要和异常提醒发到飞书。**
 
-A small Windows tray companion for Codex: Feishu notifications for completed or failed tasks, a global hotkey, and an optional away guard. Built with C# / .NET 8 / WinForms, with a legacy PowerShell entry.
+一个 Windows 托盘工具：读取本地 Codex 会话日志，通过你配置的飞书机器人发送通知；支持分别开关完成与失败提醒，并用默认快捷键 `Alt+W` 开关通知。
+
+**[从源码运行](#从源码运行) · [配置飞书与测试](#配置飞书与测试) · [实现说明](#实现与边界)**
+
+Windows · C# / .NET 8 / WinForms。目前提供源码，尚无预编译下载包。离开防护是默认关闭的可选功能。
+
+A Windows tray tool that forwards local Codex task completion summaries and failure alerts to Feishu.
 
 这是个人工具项目，与 OpenAI、Codex 或飞书没有官方关联。推荐使用原生 .NET 入口。
 
-## 功能
-
-- **任务通知**：增量读取本地 Codex 会话事件，区分完成、异常和主动中断，过滤重复事件。
-- **托盘与快捷键**：默认 `Alt+W` 开关通知，可分别控制完成通知和失败通知。
-- **可选离开防护**：持续鼠标设备移动触发屏幕提醒；可另外开启本地拍照和连续三次告警自动锁屏。
-- **输入来源过滤**：结合 Raw Input 和低层鼠标注入标记，减少软件移动光标引起的误报。
-- **本地设置**：首次使用自行设置密码；摄像头、自动锁屏和离开防护均默认关闭。
-
-## 界面
-
-以下图片由真实 WinForms 界面使用合成数据渲染，未截取个人桌面、真实通知或摄像头内容。设置窗口为展开后的示例尺寸。
-
 <img src="docs/images/settings.png" alt="KevinNotification 设置窗口：通知、离开防护、快捷键和 Webhook" width="620">
 
-<img src="docs/images/away-guard.png" alt="使用演示文案的离开防护警告窗口" width="760">
+*设置窗口由真实 WinForms 界面使用合成数据渲染，未截取个人桌面、真实通知或摄像头内容；窗口为展开后的示例尺寸。*
 
-## 快速开始
+## 从源码运行
 
 ### 环境
 
@@ -42,11 +36,34 @@ dotnet build KevinNotificationBridgeNative/KevinNotificationBridgeNative.csproj 
 & ./KevinNotificationBridgeNative/bin/Release/net8.0-windows/KevinNotificationBridge.exe
 ```
 
+## 配置飞书与测试
+
+### 首次配置
+
 首次启动会要求设置密码；取消则退出。已有本地设置和密码会继续使用。密码用于打开设置和退出程序，**以明文保存在本地设置文件中，仅用于避免误操作，不构成 Windows 安全边界**。
 
-右键系统托盘图标打开设置，在 Webhook 输入框填入自己机器人的地址并保存，然后点击“发送测试”。返回成功表示飞书接口已接受请求，最终消息以群聊中显示为准。
+启用通知前，请确认目标群聊适合接收项目路径和任务摘要。当前会处理默认会话目录中所有项目的新事件，没有项目白名单；详细内容见[数据流与隐私](#数据流与隐私)。
 
 机器人的创建方式见[飞书自定义机器人官方指南](https://open.feishu.cn/document/client-docs/bot-v3/add-custom-bot)。当前实现只发送普通文本，不生成机器人签名；如果机器人启用了签名校验，需要相应扩展后才能使用。关键词校验也可能拒绝不匹配的通知。
+
+右键系统托盘图标打开设置，确认总通知已开启，在 Webhook 输入框填入自己机器人的地址，点击“保存设置”。保存后窗口会关闭。
+
+### 发送测试消息
+
+重新打开设置并点击“发送测试”。成功提示表示飞书接口已接受请求，请再到群聊确认消息。若未成功，请检查通知开关、Webhook 和运行日志。
+
+## 可选离开防护
+
+离开防护、摄像头拍照和自动锁屏均默认关闭，可按需在设置中开启。
+
+- **活动提醒**：持续鼠标设备移动触发屏幕提醒；可另外开启本地拍照和连续三次告警自动锁屏。
+- **输入来源过滤**：结合 Raw Input 和低层鼠标注入标记，减少软件移动光标引起的误报。输入采样、过滤规则和可选实机验证见[输入检测说明](docs/input-detection.md)。
+
+离开防护是输入活动提醒，不能识别人或证明有人操作；驱动级虚拟鼠标仍可能表现为设备输入。
+
+以下警告窗口同样使用合成数据渲染，展示演示文案，不代表实际触发了通知、拍照或锁屏。
+
+<img src="docs/images/away-guard.png" alt="使用演示文案的离开防护警告窗口" width="760">
 
 ## 数据流与隐私
 
@@ -83,13 +100,13 @@ flowchart LR
 
 原生版在 `KevinNotificationBridgeNative/`，托盘、事件监视和飞书通知均在项目内实现，没有第三方 NuGet 包依赖。旧 PowerShell 版保留于 `CodexFeishuBridge/`，两个入口共用 `AwayGuardInput.cs`。
 
+- 增量读取本地 Codex 会话事件，区分完成、异常和主动中断，过滤重复事件。
 - 依赖 Codex 本地日志的现有结构，当前处理 `event_msg` 中的 `task_complete`、非主动中断的 `turn_aborted` 和部分容量异常。它不是稳定事件接口的兼容承诺；日志格式变化可能导致漏报。
 - 只检查最近 24 小时内修改的会话文件，启动时跳过已有事件。没有持久发送队列、自动重试或暂停期间的补发；启动后新出现的文件也先建立读取位置。
 - 当前使用默认会话目录，不自动读取自定义 `CODEX_HOME` 路径。
-- 离开防护是输入活动提醒，不能识别人或证明有人操作；驱动级虚拟鼠标仍可能表现为设备输入。
 - 全局快捷键可能与其他程序冲突，注册状态可查看运行状态文件。
 
-输入采样、过滤规则和可选实机验证见[输入检测说明](docs/input-detection.md)。旧脚本的启动方式与仓库外依赖见[Legacy 说明](docs/legacy.md)。
+旧脚本的启动方式与仓库外依赖见[Legacy 说明](docs/legacy.md)。
 
 ## 验证
 
